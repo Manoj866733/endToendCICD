@@ -39,19 +39,5 @@ docker run -d -p 8081:8081 sonatype/nexus3
 
 ######################################
 
-sudo apt-get update -y
 
-sudo apt-get install docker.io -y
-
-sudo systemctl enable docker
-
-sudo systemctl status docker
-
-sudo systemctl start docker
-
-sudo apt-get update -y
-
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
-
-sudo apt-add-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main"
 
