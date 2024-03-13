@@ -12,29 +12,6 @@ sudo setenforce 0
 # Update package lists
 sudo yum update -y
 
-# Install Java
-sudo yum install java-17-openjdk-devel -y
-
-# Install Jenkins
-sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
-sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
-sudo yum update -y
-sudo yum install jenkins -y
-sudo systemctl start jenkins
-sudo systemctl enable jenkins
-
-# Install Trivy for Vulnerability Scanning
-sudo yum install wget -y
-sudo wget -O /etc/yum.repos.d/trivy.repo https://aquasecurity.github.io/trivy-repo/rpm/trivy.repo
-sudo rpm --import https://aquasecurity.github.io/trivy-repo/rpm/signing-key.asc
-sudo yum update -y
-sudo yum install trivy -y
-
-# Install Docker
-sudo yum install docker -y
-sudo systemctl start docker
-sudo systemctl enable docker
-
 # Install containerd
 sudo yum install -y yum-utils
 sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
@@ -48,8 +25,12 @@ sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 sudo systemctl enable kubelet
 sudo systemctl start kubelet
 
+sleep 30
+
 # Initialize Kubernetes cluster (Run this command manually)
-# sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+
+sleep 30
 
 # Setup kubeconfig for the current user
 KUBE_CONFIG="$HOME/.kube/config"
