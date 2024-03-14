@@ -70,7 +70,7 @@ module "ec2_instance" {
   root_block_device = [
     {
       volume_type = "gp2"
-      volume_size = 16
+      volume_size = 24
     },
   ]
   tags = {
