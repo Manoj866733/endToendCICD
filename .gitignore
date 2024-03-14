@@ -24,5 +24,6 @@ nbdist/
 .nb-gradle/
 
 ##ignoring Terraform stateful adn modules from git
-.terraform
+.terraform*
 .terraform.lock*
+
