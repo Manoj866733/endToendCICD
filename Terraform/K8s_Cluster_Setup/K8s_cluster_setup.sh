@@ -135,23 +135,35 @@ echo "Use below CMD to output for joining the worker Node"
 kubeadm token create --print-join-command
 
 
-KUBE_CONFIG="$HOME/.kube/config"
+KUBE_CONFIG="/root/.kube/config"
 
 # Check if the config file exists
 if [ ! -f "$KUBE_CONFIG" ]; then
     echo "Copying kube config file to $KUBE_CONFIG"
-    mkdir -p $HOME/.kube
+    mkdir -p /root/.kube
     sudo cp -i /etc/kubernetes/admin.conf $KUBE_CONFIG
     sudo chown $(id -u):$(id -g) $KUBE_CONFIG
 else
     echo "Kube config file already exists at $KUBE_CONFIG"
 fi
 
+KUBE_CONFIG="/home/ubuntu/.kube/config"
+
+# Check if the config file exists
+if [ ! -f "$KUBE_CONFIG" ]; then
+    echo "Copying kube config file to $KUBE_CONFIG"
+    mkdir -p /home/ubuntu/.kube
+    sudo cp -i /etc/kubernetes/admin.conf $KUBE_CONFIG
+    sudo chown $(id -u):$(id -g) $KUBE_CONFIG
+else
+    echo "Kube config file already exists at $KUBE_CONFIG"
+fi
+
+kubectl get po -A
 
 #For making master to work as a worker removing taint.
 kubectl taint no --all node-role.kubernetes.io/control-plane:NoSchedule-
 
-
-echo "Configuration Done for K8s Cluster"
+echo "Install Complete and K8s is succefully setted up"
 
 ####Completed

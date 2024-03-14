@@ -80,3 +80,13 @@ module "ec2_instance" {
     Environment = "dev"
   }
 }
+
+output "Jenkins_Access" {
+  description = "Access Jenkins Server with below URL"
+  value = "http://${module.ec2_instance.public_ip}:8080"
+}
+
+output "instance_public_ip" {
+  description = "Public IP address of the Jenkins server"
+  value       = module.ec2_instance.public_ip
+}
