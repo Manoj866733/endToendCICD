@@ -1,192 +1,148 @@
 pipeline {
     agent any
     
+    tools {
+        jdk 'jdk17'
+        maven 'maven3'
+    }
+    
     environment {
-        
         SCANNER_HOME = tool 'sonar-scanner'
     }
-
+    
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'latest', url: 'https://github.com/jaiswaladi246/10-Tier-MicroService-Appliction.git'
+                git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/jaiswaladi246/Boardgame.git'
             }
         }
         
-        stage('SonarQube') {
+        stage('Compile') {
             steps {
-                
+                sh "mvn compile"
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                sh "mvn test"
+            }
+        }
+        
+        stage('File System Scan') {
+            steps {
+                sh "trivy fs --format table -o trivy-fs-report.html ."
+            }
+        }
+        
+        stage('SonarQube Analysis') {
+            steps {
                 withSonarQubeEnv('sonar') {
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=10-Tier -Dsonar.projectName=10-Tier -Dsonar.java.binaries=. '''
+                    sh '''
+                    $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=BoardGame \
+                    -Dsonar.projectKey=BoardGame \
+                    -Dsonar.java.binaries=.
+                    '''
                 }
-               
             }
         }
         
-        stage('adservice') {
+        stage('Quality Gate') {
             steps {
-                script{
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                          dir('/var/lib/jenkins/workspace/10-Tier/src/adservice/') {
-                                 sh "docker build -t adijaiswal/adservice:latest ."
-                                 sh "docker push adijaiswal/adservice:latest"
-								 sh " docker rmi adijaiswal/adservice:latest"
-                        }
-                    }
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
                 }
             }
         }
-		
-		stage('cartservice') {
+        
+        stage('Build') {
             steps {
-                script{
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                          dir('/var/lib/jenkins/workspace/10-Tier/src/cartservice/src/') {
-                                 sh "docker build -t adijaiswal/cartservice:latest ."
-                                 sh "docker push adijaiswal/cartservice:latest"
-								 sh " docker rmi adijaiswal/cartservice:latest"
-                        }
-                    }
+                sh "mvn package"
+            }
+        }
+        
+        stage('Publish To Nexus') {
+            steps {
+                withMaven(globalMavenSettingsConfig: 'global-settings', jdk: 'jdk17', maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
+                    sh "mvn deploy"
                 }
             }
         }
-		
-		stage('checkoutservice') {
+        
+        stage('Build & Tag Docker Image') {
             steps {
-                script{
+                script {
                     withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                          dir('/var/lib/jenkins/workspace/10-Tier/src/checkoutservice/') {
-                                 sh "docker build -t adijaiswal/checkoutservice:latest ."
-                                 sh "docker push adijaiswal/checkoutservice:latest"
-								 sh " docker rmi adijaiswal/checkoutservice:latest"
-                        }
-                    }
-                }
-            }
-        }
-		
-		stage('currencyservice') {
-            steps {
-                script{
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                          dir('/var/lib/jenkins/workspace/10-Tier/src/currencyservice/') {
-                                 sh "docker build -t adijaiswal/currencyservice:latest ."
-                                 sh "docker push adijaiswal/currencyservice:latest"
-								 sh " docker rmi adijaiswal/currencyservice:latest"
-                        }
+                        sh "docker build -t adijaiswal/boardshack:latest ."
                     }
                 }
             }
         }
         
-		stage('emailservice') {
+        stage('Docker Image Scan') {
             steps {
-                script{
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                          dir('/var/lib/jenkins/workspace/10-Tier/src/emailservice/') {
-                                 sh "docker build -t adijaiswal/emailservice:latest ."
-                                 sh "docker push adijaiswal/emailservice:latest"
-								 sh " docker rmi adijaiswal/emailservice:latest"
-                        }
-                    }
-                }
+                sh "trivy image --format table -o trivy-image-report.html adijaiswal/boardshack:latest "
             }
         }
-		
-		stage('frontend') {
+        
+        stage('Push Docker Image') {
             steps {
-                script{
+                script {
                     withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                          dir('/var/lib/jenkins/workspace/10-Tier/src/frontend/') {
-                                 sh "docker build -t adijaiswal/frontend:latest ."
-                                 sh "docker push adijaiswal/frontend:latest"
-								 sh " docker rmi adijaiswal/frontend:latest"
-                        }
-                    }
-                }
-            }
-        }
-		
-		stage('loadgenerator') {
-            steps {
-                script{
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                          dir('/var/lib/jenkins/workspace/10-Tier/src/loadgenerator/') {
-                                 sh "docker build -t adijaiswal/loadgenerator:latest ."
-                                 sh "docker push adijaiswal/loadgenerator:latest"
-								 sh " docker rmi adijaiswal/loadgenerator:latest"
-                        }
-                    }
-                }
-            }
-        }
-		
-		stage('paymentservice') {
-            steps {
-                script{
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                          dir('/var/lib/jenkins/workspace/10-Tier/src/paymentservice/') {
-                                 sh "docker build -t adijaiswal/paymentservice:latest ."
-                                 sh "docker push adijaiswal/paymentservice:latest"
-								  sh " docker rmi adijaiswal/paymentservice:latest"
-                        }
+                        sh "docker push adijaiswal/boardshack:latest"
                     }
                 }
             }
         }
         
-		stage('productcatalogservice') {
+        stage('Deploy To Kubernetes') {
             steps {
-                script{
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                          dir('/var/lib/jenkins/workspace/10-Tier/src/productcatalogservice/') {
-                                 sh "docker build -t adijaiswal/productcatalogservice:latest ."
-                                 sh "docker push adijaiswal/productcatalogservice:latest"
-								 sh " docker rmi adijaiswal/productcatalogservice:latest"
-                        }
-                    }
-                }
-            }
-        }
-		
-		stage('recommendationservice') {
-            steps {
-                script{
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                          dir('/var/lib/jenkins/workspace/10-Tier/src/recommendationservice/') {
-                                 sh "docker build -t adijaiswal/recommendationservice:latest ."
-                                 sh "docker push adijaiswal/recommendationservice:latest"
-								 sh " docker rmi adijaiswal/recommendationservice:latest"
-                        }
-                    }
-                }
-            }
-        }
-		
-		stage('shippingservice') {
-            steps {
-                script{
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                          dir('/var/lib/jenkins/workspace/10-Tier/src/shippingservice/') {
-                                 sh "docker build -t adijaiswal/shippingservice:latest ."
-                                 sh "docker push adijaiswal/shippingservice:latest"
-								 sh " docker rmi adijaiswal/shippingservice:latest"
-                        }
-                    }
+                withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://172.31.8.146:6443') {
+                    sh "kubectl apply -f deployment-service.yaml"
                 }
             }
         }
         
-        
-        	stage('K8-Deploy') {
+        stage('Verify the Deployment') {
             steps {
-                withKubeConfig(caCertificate: '', clusterName: 'my-eks8', contextName: '', credentialsId: 'k8-token', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://2BCD568E04EC6456125F85067AFE81B9.gr7.ap-south-1.eks.amazonaws.com') {
-                         sh 'kubectl apply -f deployment-service.yml'
-                         sh 'kubectl get pods '
-                         sh 'kubectl get svc'
+                withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://172.31.8.146:6443') {
+                    sh "kubectl get pods -n webapps"
+                    sh "kubectl get svc -n webapps"
                 }
             }
         }
-        
+    }
+    
+    post {
+        always {
+            script {
+                def jobName = env.JOB_NAME
+                def buildNumber = env.BUILD_NUMBER
+                def pipelineStatus = currentBuild.result ?: 'UNKNOWN'
+                def bannerColor = pipelineStatus.toUpperCase() == 'SUCCESS' ? 'green' : 'red'
+                def body = """
+                <html>
+                <body>
+                <div style="border: 4px solid ${bannerColor}; padding: 10px;">
+                <h2>${jobName} - Build ${buildNumber}</h2>
+                <div style="background-color: ${bannerColor}; padding: 10px;">
+                <h3 style="color: white;">Pipeline Status: ${pipelineStatus.toUpperCase()}</h3>
+                </div>
+                <p>Check the <a href="${BUILD_URL}">console output</a>.</p>
+                </div>
+                </body>
+                </html>
+                """
+                emailext (
+                    subject: "${jobName} - Build ${buildNumber} - ${pipelineStatus.toUpperCase()}",
+                    body: body,
+                    to: 'jaiswaladi246@gmail.com',
+                    from: 'jenkins@example.com',
+                    replyTo: 'jenkins@example.com',
+                    mimeType: 'text/html',
+                    attachmentsPattern: 'trivy-image-report.html'
+                )
+            }
+        }
     }
 }
