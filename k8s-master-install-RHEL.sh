@@ -48,7 +48,7 @@ source $HOME/.bashrc
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 
 # Wait for a while for services to start
-sleep 60
+sleep 30
 
 # Verify installation
 kubectl get nodes

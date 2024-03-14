@@ -2,7 +2,7 @@
 
 module "vpc" {
   source                  = "terraform-aws-modules/vpc/aws"
-  name                    = "VPC-Jenkins-Project03"
+  name                    = "VPC-K8s-Project03"
   cidr                    = var.cidr
   azs                     = data.aws_availability_zones.azs.names
   public_subnets          = var.public_subnets
@@ -10,13 +10,13 @@ module "vpc" {
   enable_dns_hostnames    = true
 
   tags = {
-    Name        = "VPC-Jenkins-Project03"
+    Name        = "VPC-K8s-Project03"
     Terraform   = "true"
     Environment = "dev"
   }
 
   public_subnet_tags = {
-    Name = "Public-Jenkins-Project03"
+    Name = "Public-K8s-Project03"
   }
 
 }
@@ -26,7 +26,7 @@ module "vpc" {
 module "vote_service_sg" {
   source = "terraform-aws-modules/security-group/aws"
 
-  name        = "Jenkins-Project03-sg"
+  name        = "K8s-Project03-sg"
   description = "sg for Project03"
   vpc_id      = module.vpc.vpc_id
   ingress_with_cidr_blocks = [
@@ -47,7 +47,7 @@ module "vote_service_sg" {
     }
   ]
   tags = {
-    Name = "Jenkins-Project03-sg"
+    Name = "K8s-Project03-sg"
   }
 
 }
@@ -57,25 +57,24 @@ module "vote_service_sg" {
 module "ec2_instance" {
   source = "terraform-aws-modules/ec2-instance/aws"
 
-  name = "Jenkins_Server-Project03"
-  ami = var.ami_id
+  name                        = "K8s-Cluster-Project03"
+  ami                         = var.ami_id
   instance_type               = var.instance_type
   key_name                    = "Basic_US_EAST_1"
   monitoring                  = true
   vpc_security_group_ids      = [module.vote_service_sg.security_group_id]
   subnet_id                   = module.vpc.public_subnets[0]
   associate_public_ip_address = true
-  user_data                   = file("jenkins-server-setup.sh")
+  user_data                   = file("K8s_cluster_setup.sh")
   availability_zone           = data.aws_availability_zones.azs.names[0]
   root_block_device = [
     {
       volume_type = "gp2"
-      volume_size = 12
+      volume_size = 16
     },
   ]
-
   tags = {
-    Name        = "Jenkins_Server-Project03"
+    Name        = "K8s-Cluster-Project03"
     Terraform   = "true"
     Environment = "dev"
   }

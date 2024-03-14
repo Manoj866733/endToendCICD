@@ -39,7 +39,9 @@ sudo mv ./kubectl /usr/bin/kubectl
 sudo mv ./kubectl /usr/local/bin/kubectl
 kubectl version --client
 
-#Success All installation done on Jenkins Server
+echo "Success All installation done on Jenkins Server"
+
+###Completed
 
 
 

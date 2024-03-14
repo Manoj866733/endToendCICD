@@ -146,3 +146,12 @@ if [ ! -f "$KUBE_CONFIG" ]; then
 else
     echo "Kube config file already exists at $KUBE_CONFIG"
 fi
+
+
+#For making master to work as a worker removing taint.
+kubectl taint no --all node-role.kubernetes.io/control-plane:NoSchedule-
+
+
+echo "Configuration Done for K8s Cluster"
+
+####Completed

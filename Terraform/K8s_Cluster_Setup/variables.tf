@@ -14,8 +14,7 @@ variable "instance_type" {
   description = "Type Of instance for this activity"
 }
 
-
 variable "ami_id" {
-  type = string
+  type        = string
   description = "AMI for Instacne creation"
 }
