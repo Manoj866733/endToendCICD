@@ -1,12 +1,18 @@
 pipeline {
     agent any
+    
+    tools {
+        jdk 'jdk17'
+        maven 'maven3'
+    }
+    
     environment {
         $SCANNER_HOME = tool 'sonar-scanner'
     }
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/VibishnathanG/Project-03-Ecom-endToendCICD.git'
+                git branch: 'main', credentialsId: 'git-creds', url: 'https://github.com/VibishnathanG/Project-03-Ecom-endToendCICD.git'
             }
         }
         stage('Maven Compile') {
@@ -34,7 +40,7 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 script {
-                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-cred'
                 }
             }
         }
@@ -65,7 +71,7 @@ pipeline {
         stage('Docker Build and tag') {
             steps {
                 script{
-                withDockerRegistry(credentialsId: 'docker-cred', url: 'https://hub.docker.com/') {
+                withDockerRegistry(credentialsId: 'docker-creds', url: 'https://hub.docker.com/') {
                 sh 'docker build -t vibishnathan/boardgame:latest .'
                 }
             }
@@ -80,7 +86,7 @@ pipeline {
         stage('Docker Image Push') {
             steps {
                 script{
-                withDockerRegistry(credentialsId: 'docker-cred', url: 'https://hub.docker.com/') {
+                withDockerRegistry(credentialsId: 'docker-creds', url: 'https://hub.docker.com/') {
                 sh 'docker push vibishnathan/boardgame:latest'
                     
                 }
@@ -98,7 +104,7 @@ pipeline {
         
         stage('Verify the Deployment') {
             steps {
-                withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'kubernetes', contextName: '', credentialsId: 'k8s-secret', namespace: 'webapps', serverUrl: 'https://20.0.1.20:6443']]) {
+                withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'kubernetes', contextName: '', credentialsId: 'k8s-secret', namespace: 'webapps', serverUrl: 'https://20.0.1.161:6443']]) {
                     sh "kubectl get pods -n webapps"
                     sh "kubectl get svc -n webapps"
                 }

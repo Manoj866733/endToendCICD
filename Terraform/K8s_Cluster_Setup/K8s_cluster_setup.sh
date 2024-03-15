@@ -159,6 +159,8 @@ else
     echo "Kube config file already exists at $KUBE_CONFIG"
 fi
 
+sudo chmod -R 777 /home/ubuntu/.kube/
+
 kubectl get po -A
 
 #For making master to work as a worker removing taint.
