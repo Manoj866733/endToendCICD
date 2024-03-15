@@ -71,7 +71,7 @@ pipeline {
         stage('Docker Build and tag') {
             steps {
                 script{
-                withDockerRegistry(credentialsId: 'docker-creds', url: 'https://hub.docker.com/') {
+                withDockerRegistry(credentialsId: 'docker-creds', toolName: 'docker') {
                 sh 'docker build -t vibishnathan/boardgame:latest .'
                 }
             }
@@ -86,7 +86,7 @@ pipeline {
         stage('Docker Image Push') {
             steps {
                 script{
-                withDockerRegistry(credentialsId: 'docker-creds', url: 'https://hub.docker.com/') {
+                withDockerRegistry(credentialsId: 'docker-creds', toolName: 'docker') {
                 sh 'docker push vibishnathan/boardgame:latest'
                     
                 }
