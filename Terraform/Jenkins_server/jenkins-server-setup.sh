@@ -41,6 +41,18 @@ kubectl version --client
 
 echo "Success All installation done on Jenkins Server"
 
+
+#Starting Installation for node exporter
+
+wget https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
+tar -xvf node_exporter-1.7.0.linux-amd64.tar.gz
+rm -rf node_exporter-1.7.0.linux-amd64.tar.gz
+cd node_exporter-1.7.0.linux-amd64/
+./node_exporter &
+echo
+
+echo "Node exporter installed sucessfully"
+
 ###Completed
 
 
