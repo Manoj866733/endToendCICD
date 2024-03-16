@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'git-creds', url: 'https://github.com/VibishnathanG/Project-03-Ecom-endToendCICD.git'
+                git branch: 'main', credentialsId: 'git-creds', url: 'https://github.com/VibishnathanG/Project-03-endToendCICD.git'
             }
         }
         stage('Maven Compile') {
